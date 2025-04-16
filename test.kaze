@@ -1,0 +1,25 @@
+root{
+  label: "Raiz",
+  child: node1,
+  child: node2, 
+  child: node3,
+  color: #ffb3ba
+  bgcolor: #fffff
+};
+
+node1{
+  label: "Node 1",
+  color: #bae1ff
+}
+
+node2{
+  label: "Node 3",
+  color: #bae1ff
+}
+
+node3{
+  label: "Node 14",
+  color: #bae1ff
+}
+
+
