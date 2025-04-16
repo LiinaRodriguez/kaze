@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Crer un lenguaje de programación personalizado que permita definir de forma simple, legible y estética diagramas jerarquicos y de flujo con propiedades visuales personalizadas.
+Crear un lenguaje de programación personalizado que permita definir de forma simple, legible y estética diagramas jerarquicos y de flujo con propiedades visuales personalizadas.
 
 Este lenguaje será interpretado o compilado usando un sistema propio desarrollado en typescript, utilizando **AFD** para el anáisis léxico, **Autómatas pila (AP)** para el análisis sintáctico **(MT)** Interpretación.
 
