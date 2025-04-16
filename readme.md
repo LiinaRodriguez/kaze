@@ -15,7 +15,7 @@ Este lenguaje será interpretado o compilado usando un sistema propio desarrolla
 
 ## Sintaxis del lenguaje
 
-````json
+````s
     root {
         label: "Raiz",
         child: node1,
