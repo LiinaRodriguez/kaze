@@ -4,8 +4,10 @@ export interface Node {
   name: string;
   label: string;
   children: string[];
-  color?: string;
-  bgcolor?: string;
+  style?: {
+    color?: string,
+    bgcolor?: string,
+  }
 }
 
 export class Parser {
@@ -39,41 +41,40 @@ export class Parser {
   private parseRoot(): void {
     this.consume(TokenType.Identifier);
     this.consume(TokenType.Brace);
-
+  
     const rootNode: Node = {
       name: 'root',
       label: '',
       children: []
     };
-
+  
     while (this.currentToken.type !== TokenType.Brace) {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
-
-      const value = this.parseValue();
-
-      switch (key) {
-        case 'label':
-          rootNode.label = value as string;
-          break;
-        case 'child':
-          rootNode.children.push(value as string);
-          break;
-        case 'color':
-          rootNode.color = value as string;
-          break;
-        case 'bgcolor':
-          rootNode.bgcolor = value as string;
-          break;
-        default:
-          throw new Error(`Invalid attribute: ${key}`);
-          
+  
+      if (key === 'style') {
+        // Si es un estilo, no usamos parseValue(), sino parseStyle()
+        rootNode.style = this.parseStyle();
+      } else {
+        const value = this.parseValue(); // para valores simples
+        switch (key) {
+          case 'label':
+            rootNode.label = value as string;
+            break;
+          case 'child':
+            rootNode.children.push(value as string);
+            break;
+          default:
+            throw new Error(`Invalid attribute: ${key}`);
+        }
       }
-      
-      if (this.currentToken.type === TokenType.Comma) this.consume();
+  
+      if (this.currentToken.type === TokenType.Comma) {
+        this.consume();
+      }
     }
-    
+  
     this.nodes.set('root', rootNode);
     this.consume(TokenType.Brace); // '}'
   }
@@ -83,41 +84,40 @@ export class Parser {
     if (this.nodes.has(nodeName)) throw new Error(`Duplicate node: ${nodeName}`);
     this.consume(TokenType.Identifier);
     this.consume(TokenType.Brace); 
-    
+  
     const node: Node = {
       name: nodeName,
       label: '',
       children: []
     };
-
+  
     while (this.currentToken.type !== TokenType.Brace) {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator); // :
-      
-      const value = this.parseValue();
-
-      switch (key) {
-        case 'label':
-          node.label = value as string;
-
-          break;
-        case 'child':
-          node.children.push(value as string);
-          break;
-        case 'color':
-          node.color = value as string;
-          break;
-        case 'bgcolor':
-          node.bgcolor = value as string;
-          break;
-        default:
-          throw new Error(`Invalid attribute: ${key}`);
+  
+      if (key === 'style') {
+        // Si es un estilo, no usamos parseValue(), sino parseStyle()
+        node.style = this.parseStyle();
+      } else {
+        const value = this.parseValue(); // para valores simples
+        switch (key) {
+          case 'label':
+            node.label = value as string;
+            break;
+          case 'child':
+            node.children.push(value as string);
+            break;
+          default:
+            throw new Error(`Invalid attribute: ${key}`);
+        }
       }
-      
-      if (this.currentToken.type === TokenType.Comma) this.consume();
+  
+      if (this.currentToken.type === TokenType.Comma) {
+        this.consume();
+      }
     }
-    
+  
     this.nodes.set(nodeName, node);
     this.consume(TokenType.Brace); // '}'
   }
@@ -140,6 +140,36 @@ export class Parser {
       default:
         throw new Error(`Invalid value type: ${this.currentToken.type}`);
     }
+  }
+
+  private parseStyle(): { color?: string, bgcolor?: string }{
+    const style: { color?: string, bgcolor?: string } = {}
+    this.consume(TokenType.Brace);
+    
+    while (this.currentToken.type !== TokenType.Brace) {
+      const key = this.currentToken.value
+      this.consume()
+      this.consume(TokenType.Operator)
+
+      const value = this.parseValue();
+
+      switch (key) {
+        case 'color':
+          style.color = value as string
+          break;
+        case 'bgcolor':
+          style.bgcolor = value as string
+          break; 
+        default:
+          throw new Error(`Invalid style attribute ${key}`)
+          
+      }
+      if (this.currentToken.type === TokenType.Comma) {
+        this.consume();
+      }
+    }
+    this.consume(TokenType.Brace)
+    return style;
   }
 
   private validateReferences(): void {
