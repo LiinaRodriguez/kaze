@@ -1,8 +1,6 @@
 root{
   label: "Raiz",
-  child: node1,
-  child: node2, 
-  child: node3,
+  children: [node1, node2, node3]
   color: #ffb3ba
   bgcolor: #fffff
 };

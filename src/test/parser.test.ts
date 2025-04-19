@@ -88,7 +88,9 @@ describe('Diagram Parser', () => {
   test('siempre debe tener un atributo label', () => {
     const code = `
       root{
-          color: fff
+         style:{
+          color: ffff,
+         },
       }
     `;
 
@@ -100,7 +102,9 @@ describe('Diagram Parser', () => {
       name: 'root',
       label: '',
       children: [],
-      color: 'fff'
+      style: {
+        color:'ffff'
+      }
     });
   });
 
@@ -135,7 +139,9 @@ describe('Diagram Parser', () => {
     const code = `
       root{
         label: "Test",
-        bgcolor: abcdef
+        style:{
+          bgcolor: abcdef
+        },
       }
     `;
 
@@ -147,7 +153,9 @@ describe('Diagram Parser', () => {
       name: 'root',
       label: 'Test',
       children: [],
-      bgcolor: 'abcdef'
+      style:{
+        bgcolor:'abcdef'
+      }
     });
   });
 });
