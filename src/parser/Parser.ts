@@ -54,7 +54,7 @@ export class Parser {
       this.consume(TokenType.Operator);
   
       if (key === 'style') {
-        // Si es un estilo, no usamos parseValue(), sino parseStyle()
+        
         rootNode.style = this.parseStyle();
       } else {
         const value = this.parseValue(); // para valores simples
@@ -76,7 +76,7 @@ export class Parser {
     }
   
     this.nodes.set('root', rootNode);
-    this.consume(TokenType.Brace); // '}'
+    this.consume(TokenType.Brace);
   }
 
   private parseNode(): void {

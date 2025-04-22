@@ -25,8 +25,8 @@ export class ASTBuilder {
     return {
       name: node.name,
       label: node.label,
-      color: node.color,
-      bgcolor: node.bgcolor,
+      color: node.style?.color ?? undefined,
+      bgcolor: node.style?.bgcolor ?? undefined,
       children: node.children.map((childName: string) => {
         const childNode = this.astMap.get(childName);
         if (!childNode) {
