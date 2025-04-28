@@ -51,3 +51,11 @@ output:
 ![alt text](image-1.png)
 
 ## To do
+
+cli
+    input: kaze file
+    output: png/svg diagram
+
+web editor
+    input: kaze code
+    output: web visualization
