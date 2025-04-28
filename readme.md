@@ -1,5 +1,11 @@
 # KAZE 🍁
 
+## Autor:
+
+🐱‍💻 Nicole Bernal 
+🐱‍💻 Lina Rodriguez
+
+
 ## Objetivo
 
 Crear un lenguaje personalizado que permita definir de forma simple, legible y estética diagramas jerarquicos y de flujo con propiedades visuales personalizadas.
