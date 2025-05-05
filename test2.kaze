@@ -1,26 +1,22 @@
 root {
         label: "Raiz",
-        child: node1,
-        child: node2,
-        child: node3,
+        children: [node1, node2, node3]
         style: { color: #baffc9,
         bgcolor: "#fffff" }
       };
       node1 {
         label: "Node 1",
-        child: node12
-        child: node2,
-        child: node3,
+        children: [node12, node2, node3]
         style:{color: #ffdfba}
       }
       node2 {
         label: "Node 2",
-        child: node22,
+        children: [node22],
         style:{color: #ff8b94}
       }
       node3 {
         label: "Node 3",
-        child: node32,
+        children: [node32],
         style:{color: #ffdfba}
       }
       node12 { label:"1", style: {color: #ff8b94 }};

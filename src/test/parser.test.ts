@@ -6,7 +6,7 @@ describe('Diagram Parser', () => {
   test('debe parsear nodo root válido', () => {
     const code = `root{
         label: "Raiz",
-        child: node1
+        children: [node1]
       }
       node1{ label: "Nodo 1" };
     `;
@@ -28,13 +28,12 @@ describe('Diagram Parser', () => {
     const code = `
       root{
         label: "Main",
-        child: child1,
-        child: child2
+        children: [child1, child2]
       }
       
       child1{
         label: "First Child",
-        child: subchild
+        children: [subchild]
       }
       
       child2{
@@ -59,7 +58,7 @@ describe('Diagram Parser', () => {
   test('debe lanzar error por definición duplicada', () => {
     const code = `root{
         label: "Raiz",
-        child: node1
+        children: [node1]
       }
       node1{ label: "Test" }
       node1{ label: "Duplicate" }
@@ -75,7 +74,7 @@ describe('Diagram Parser', () => {
     const code = `
       root{
         label: "Test",
-        child: missingNode
+        children: [missingNode]
       }
     `;
 
