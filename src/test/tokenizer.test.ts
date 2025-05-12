@@ -70,7 +70,7 @@ describe('Tokenizer', () => {
   });
 
   test('debe manejar paréntesis y llaves', () => {
-    const input = '( ) { }';
+    const input = '( ) { } [ ]';
     const tokenizer = new Tokenizer(input);
     const tokens = tokenizer.tokenize();
 
@@ -79,7 +79,9 @@ describe('Tokenizer', () => {
       { type: TokenType.Paren, value: ')', position: 2 },
       { type: TokenType.Brace, value: '{', position: 4 },
       { type: TokenType.Brace, value: '}', position: 6 },
-      { type: TokenType.EOF, value: 'EOF', position: 7 }
+      { type: TokenType.Bracket, value: '[', position: 8 },
+      { type: TokenType.Bracket, value: ']', position: 10},
+      { type: TokenType.EOF, value: 'EOF', position: 11 } 
     ]);
   });
 

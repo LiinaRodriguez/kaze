@@ -76,6 +76,8 @@ export class Tokenizer {
               case '.': 
                 tokens.push({ type: TokenType.Dot, value: char, position: this.position });
                 break;
+              case '[': case ']':
+                tokens.push({ type: TokenType.Bracket, value: char, position: this.position });
             }
             if (!this.isWhitespace(char)) {
               // Manejar errores aquí si es necesario
