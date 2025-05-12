@@ -6,6 +6,7 @@ export enum TokenType {
   Operator = "Operator",
   Paren = "Paren",
   Brace = "Brace",
+  Bracket = "Bracket",
   Comma = "Comma",
   Dot = "Dot",
   EOF = "EOF"

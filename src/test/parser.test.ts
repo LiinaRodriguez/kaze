@@ -28,7 +28,7 @@ describe('Diagram Parser', () => {
     const code = `
       root{
         label: "Main",
-        children: [child1, child2]
+        children: [child1,child2]
       }
       
       child1{
