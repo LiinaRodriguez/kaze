@@ -1,5 +1,5 @@
 root{
-  label: "Raiz",
+  label: "Raizj",
   children: [node1, node2, node3]
   style: {color: #ffb3ba,
   bgcolor: #fffff}

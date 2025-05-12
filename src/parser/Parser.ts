@@ -48,29 +48,29 @@ export class Parser {
       children: []
     };
   
+    // En parseRoot()
     while (this.currentToken.type !== TokenType.Brace) {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
-  
+
       if (key === 'style') {
-        
         rootNode.style = this.parseStyle();
+      } else if (key === 'children') { // Nuevo caso para 'children'
+        rootNode.children = this.parseChildren();
       } else {
-        const value = this.parseValue(); // para valores simples
+        const value = this.parseValue();
         switch (key) {
           case 'label':
             rootNode.label = value as string;
             break;
-          case 'child':
-            rootNode.children.push(value as string);
-            break;
+          // Eliminar el caso 'child'
           default:
             throw new Error(`Invalid attribute: ${key}`);
         }
       }
-  
-      if (this.currentToken.type === TokenType.Comma) {
+
+      if (this.currentToken.type === TokenType.Comma as TokenType) {
         this.consume();
       }
     }
@@ -91,28 +91,28 @@ export class Parser {
       children: []
     };
   
+    // En parseNode()
     while (this.currentToken.type !== TokenType.Brace) {
       const key = this.currentToken.value;
       this.consume();
-      this.consume(TokenType.Operator); // :
-  
+      this.consume(TokenType.Operator);
+
       if (key === 'style') {
-        // Si es un estilo, no usamos parseValue(), sino parseStyle()
         node.style = this.parseStyle();
+      } else if (key === 'children') { // Nuevo caso para 'children'
+        node.children = this.parseChildren();
       } else {
-        const value = this.parseValue(); // para valores simples
+        const value = this.parseValue();
         switch (key) {
           case 'label':
             node.label = value as string;
             break;
-          case 'child':
-            node.children.push(value as string);
-            break;
+          // Eliminar el caso 'child'
           default:
             throw new Error(`Invalid attribute: ${key}`);
         }
       }
-  
+
       if (this.currentToken.type === TokenType.Comma) {
         this.consume();
       }
@@ -140,6 +140,26 @@ export class Parser {
       default:
         throw new Error(`Invalid value type: ${this.currentToken.type}`);
     }
+  }
+
+  private parseChildren(): string[] {
+    const children: string[] = [];
+    this.consume(TokenType.Bracket); // Consume '['
+    
+    while (this.currentToken.type !== TokenType.Bracket) {
+      if (this.currentToken.type !== TokenType.Identifier) {
+        throw new Error(`Expected identifier, got ${this.currentToken.type}`);
+      }
+      children.push(this.currentToken.value);
+      this.consume(TokenType.Identifier); // Consume el identificador
+      
+      if (this.currentToken.type === TokenType.Comma as TokenType) {
+        this.consume(TokenType.Comma); // Consume la coma si existe
+      }
+    }
+    
+    this.consume(TokenType.Bracket); // Consume ']'
+    return children;
   }
 
   private parseStyle(): { color?: string, bgcolor?: string }{
