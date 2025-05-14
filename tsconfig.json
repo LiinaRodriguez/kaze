@@ -1,26 +1,19 @@
 {
   "compilerOptions": {
-    "strictPropertyInitialization": false,
     "target": "ES2020",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "strict": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
     "baseUrl": ".",
     "paths": {
       "@utils/*": ["src/utils/*"],
-      "@services/*": ["src/services/*"],
-      "@models/*": ["src/models/*"]
+      "@services/*": ["src/services/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "other"]
+  "include": ["src"]
 }
