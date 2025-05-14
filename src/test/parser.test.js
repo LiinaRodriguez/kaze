@@ -5,7 +5,7 @@ describe('Diagram Parser', () => {
     test('debe parsear nodo root válido', () => {
         const code = `root{
         label: "Raiz",
-        child: node1
+        children: [node1]
       }
       node1{ label: "Nodo 1" };
     `;
@@ -24,13 +24,12 @@ describe('Diagram Parser', () => {
         const code = `
       root{
         label: "Main",
-        child: child1,
-        child: child2
+        children: [child1,child2]
       }
       
       child1{
         label: "First Child",
-        child: subchild
+        children: [subchild]
       }
       
       child2{
@@ -50,7 +49,10 @@ describe('Diagram Parser', () => {
         expect(nodes.get('subchild')?.label).toBe('Nested');
     });
     test('debe lanzar error por definición duplicada', () => {
-        const code = `
+        const code = `root{
+        label: "Raiz",
+        children: [node1]
+      }
       node1{ label: "Test" }
       node1{ label: "Duplicate" }
     `;
@@ -62,23 +64,32 @@ describe('Diagram Parser', () => {
         const code = `
       root{
         label: "Test",
-        child: missingNode
+        children: [missingNode]
       }
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());
         expect(() => parser.parse()).toThrowError('Undefined node reference: missingNode in node root');
     });
-    test('debe requerir atributo label', () => {
+    test('siempre debe tener un atributo label', () => {
         const code = `
-      root{ 
-        child: node1,
-        color: fff 
+      root{
+         style:{
+          color: ffff,
+         },
       }
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError('Invalid node: Missing required label attribute');
+        const nodes = parser.parse();
+        expect(nodes.get('root')).toEqual({
+            name: 'root',
+            label: '',
+            children: [],
+            style: {
+                color: 'ffff'
+            }
+        });
     });
     test('debe rechazar atributos inválidos', () => {
         const code = `
@@ -105,7 +116,9 @@ describe('Diagram Parser', () => {
         const code = `
       root{
         label: "Test",
-        bg-color: abcdef
+        style:{
+          bgcolor: abcdef
+        },
       }
     `;
         const tokenizer = new Tokenizer(code);
@@ -115,7 +128,9 @@ describe('Diagram Parser', () => {
             name: 'root',
             label: 'Test',
             children: [],
-            bgColor: 'abcdef'
+            style: {
+                bgcolor: 'abcdef'
+            }
         });
     });
 });

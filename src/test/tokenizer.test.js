@@ -1,5 +1,5 @@
-import { TokenType } from '../../src/lexer/lexer.js';
-import { Tokenizer } from '../../src/lexer/Tokenizer.js';
+import { TokenType } from '../lexer/lexer.js';
+import { Tokenizer } from '../lexer/Tokenizer.js';
 import { describe, expect, test } from '@jest/globals';
 describe('Tokenizer', () => {
     test('debe tokenizar identificadores y keywords', () => {
@@ -59,7 +59,7 @@ describe('Tokenizer', () => {
         ]);
     });
     test('debe manejar paréntesis y llaves', () => {
-        const input = '( ) { }';
+        const input = '( ) { } [ ]';
         const tokenizer = new Tokenizer(input);
         const tokens = tokenizer.tokenize();
         expect(tokens).toEqual([
@@ -67,7 +67,9 @@ describe('Tokenizer', () => {
             { type: TokenType.Paren, value: ')', position: 2 },
             { type: TokenType.Brace, value: '{', position: 4 },
             { type: TokenType.Brace, value: '}', position: 6 },
-            { type: TokenType.EOF, value: 'EOF', position: 7 }
+            { type: TokenType.Bracket, value: '[', position: 8 },
+            { type: TokenType.Bracket, value: ']', position: 10 },
+            { type: TokenType.EOF, value: 'EOF', position: 11 }
         ]);
     });
     test('debe manejar posición correcta con espacios', () => {
