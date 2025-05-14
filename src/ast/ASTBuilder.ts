@@ -1,4 +1,4 @@
-import type { Node } from "../parser/Parser.js";
+import type { Node } from "../parser/Parser.ts";
 
 export type ASTNode = {
   name: string;

@@ -1,0 +1,68 @@
+{
+  "nodes": [
+    {
+      "id": "root-0",
+      "type": "default",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "label": "Raizj"
+      }
+    },
+    {
+      "id": "node1-1",
+      "type": "default",
+      "position": {
+        "x": 250,
+        "y": 0
+      },
+      "data": {
+        "label": "Node 1"
+      }
+    },
+    {
+      "id": "node2-2",
+      "type": "default",
+      "position": {
+        "x": 250,
+        "y": 120
+      },
+      "data": {
+        "label": "Node 3"
+      }
+    },
+    {
+      "id": "node3-3",
+      "type": "default",
+      "position": {
+        "x": 250,
+        "y": 240
+      },
+      "data": {
+        "label": "Node 14"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-root-0-node1-1",
+      "source": "root-0",
+      "target": "node1-1",
+      "animated": true
+    },
+    {
+      "id": "edge-root-0-node2-2",
+      "source": "root-0",
+      "target": "node2-2",
+      "animated": true
+    },
+    {
+      "id": "edge-root-0-node3-3",
+      "source": "root-0",
+      "target": "node3-3",
+      "animated": true
+    }
+  ]
+}

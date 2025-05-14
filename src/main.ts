@@ -1,21 +1,17 @@
-import * as fs from 'fs';
-import { Tokenizer } from '../src/lexer/Tokenizer.js';
-import { Parser } from '../src/parser/Parser.js'
-import { ASTBuilder } from "./ast/ASTBuilder.js";
-import { ASTPrinter } from "./ast/ASTPrinter.js";
+import { Tokenizer } from './lexer/Tokenizer.js';
+import { Parser } from './parser/Parser.js';
+import { ASTBuilder } from './ast/ASTBuilder.js';
+import { buildReactFlowGraph } from './ast/builder.js';
 
-const test_filepath = 'test.kaze';
-const test2_filepath = 'test2.kaze';
+export function parseToReactFlow(source: string) {
+  const tokenizer = new Tokenizer(source);
+  const tokens = tokenizer.tokenize();
 
-[test_filepath, test2_filepath].forEach((test) => {
-  const sourceCode = fs.readFileSync(test, 'utf-8')
-  const tokenizer = new Tokenizer(sourceCode);
-  const parser = new Parser(tokenizer.tokenize());
+  const parser = new Parser(tokens);
   const astMap = parser.parse();
-  
+
   const builder = new ASTBuilder(astMap);
   const tree = builder.build();
-  
-  ASTPrinter.print(tree);
-})
-  
+
+  return buildReactFlowGraph(tree);
+}
