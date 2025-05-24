@@ -1,5 +1,5 @@
-import { TokenType } from '../lexer/lexer.js'
-import { Tokenizer } from '../lexer/Tokenizer.js';
+import { TokenType } from '../lexer/lexer'
+import { Tokenizer } from '../lexer/Tokenizer';
 import { describe, expect, test } from '@jest/globals';
 
 describe('Tokenizer', () => {
@@ -10,11 +10,11 @@ describe('Tokenizer', () => {
 
     expect(tokens).toEqual([
       { type: TokenType.Identifier, value: 'root', position: 0 },
-      { type: TokenType.Brace, value: '{', position: 5 },
+      { type: TokenType.BraceO, value: '{', position: 5 },
       { type: TokenType.Identifier, value: 'label', position: 7 },
       { type: TokenType.Operator, value: ':', position: 12 },
       { type: TokenType.String, value: 'Main', position: 13 },
-      { type: TokenType.Brace, value: '}', position: 20 },
+      { type: TokenType.BraceC, value: '}', position: 20 },
       { type: TokenType.EOF, value: 'EOF', position: 21 }
     ]);
   });
@@ -75,12 +75,12 @@ describe('Tokenizer', () => {
     const tokens = tokenizer.tokenize();
 
     expect(tokens).toEqual([
-      { type: TokenType.Paren, value: '(', position: 0 },
-      { type: TokenType.Paren, value: ')', position: 2 },
-      { type: TokenType.Brace, value: '{', position: 4 },
-      { type: TokenType.Brace, value: '}', position: 6 },
-      { type: TokenType.Bracket, value: '[', position: 8 },
-      { type: TokenType.Bracket, value: ']', position: 10},
+      { type: TokenType.ParenO, value: '(', position: 0 },
+      { type: TokenType.ParenC, value: ')', position: 2 },
+      { type: TokenType.BraceO, value: '{', position: 4 },
+      { type: TokenType.BraceC, value: '}', position: 6 },
+      { type: TokenType.BracketO, value: '[', position: 8 },
+      { type: TokenType.BracketC, value: ']', position: 10},
       { type: TokenType.EOF, value: 'EOF', position: 11 } 
     ]);
   });
@@ -105,7 +105,7 @@ describe('Tokenizer', () => {
     expect(tokens).toEqual([
       { type: TokenType.Identifier, value: 'func', position: 0 },
       { type: TokenType.Identifier, value: 'sum', position: 5 },
-      { type: TokenType.Paren, value: '(', position: 8 },
+      { type: TokenType.ParenO, value: '(', position: 8 },
       { type: TokenType.Identifier, value: 'a', position: 9 },
       { type: TokenType.Operator, value: ':', position: 10 },
       { type: TokenType.Identifier, value: 'number', position: 12 },
@@ -113,13 +113,13 @@ describe('Tokenizer', () => {
       { type: TokenType.Identifier, value: 'b', position: 20 },
       { type: TokenType.Operator, value: ':', position: 21 },
       { type: TokenType.Identifier, value: 'number', position: 23 },
-      { type: TokenType.Paren, value: ')', position: 29 },
-      { type: TokenType.Brace, value: '{', position: 31 },
+      { type: TokenType.ParenC, value: ')', position: 29 },
+      { type: TokenType.BraceO, value: '{', position: 31 },
       { type: TokenType.Keyword, value: 'return', position: 33 },
       { type: TokenType.Identifier, value: 'a', position: 40 },
       { type: TokenType.Operator, value: '+', position: 42 },
       { type: TokenType.Identifier, value: 'b', position: 44 },
-      { type: TokenType.Brace, value: '}', position: 46 },
+      { type: TokenType.BraceC, value: '}', position: 46 },
       { type: TokenType.EOF, value: 'EOF', position: 47 }
     ]);
   });

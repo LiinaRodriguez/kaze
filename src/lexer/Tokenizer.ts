@@ -1,4 +1,4 @@
-import { TokenType, Token, State } from './lexer.js'
+import { TokenType, Token, State } from './lexer'
 
 export class Tokenizer {
   private input: string;
@@ -64,11 +64,17 @@ export class Tokenizer {
           
           } else {
             switch (char) {
-              case '(': case ')':
-                tokens.push({ type: TokenType.Paren, value: char, position: this.position });
+              case '(':
+                tokens.push({ type: TokenType.ParenO, value: char, position: this.position });
                 break;
-              case '{': case '}':
-                tokens.push({ type: TokenType.Brace, value: char, position: this.position });
+              case ')':
+                tokens.push({ type: TokenType.ParenC, value: char, position: this.position });
+                break;
+              case '{':
+                tokens.push({ type: TokenType.BraceO, value: char, position: this.position });
+                break;
+              case '}':
+                tokens.push({ type: TokenType.BraceC, value: char, position: this.position });
                 break;
               case ',': 
                 tokens.push({ type: TokenType.Comma, value: char, position: this.position });
@@ -76,8 +82,11 @@ export class Tokenizer {
               case '.': 
                 tokens.push({ type: TokenType.Dot, value: char, position: this.position });
                 break;
-              case '[': case ']':
-                tokens.push({ type: TokenType.Bracket, value: char, position: this.position });
+              case '[':
+                tokens.push({ type: TokenType.BracketO, value: char, position: this.position });
+                break;
+              case ']':
+                tokens.push({ type: TokenType.BracketC, value: char, position: this.position });
             }
             if (!this.isWhitespace(char)) {
               // Manejar errores aquí si es necesario

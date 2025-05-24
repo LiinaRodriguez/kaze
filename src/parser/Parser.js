@@ -22,14 +22,14 @@ export class Parser {
     }
     parseRoot() {
         this.consume(TokenType.Identifier);
-        this.consume(TokenType.Brace);
+        this.consume(TokenType.BraceO);
         const rootNode = {
             name: 'root',
             label: '',
             children: []
         };
         // En parseRoot()
-        while (this.currentToken.type !== TokenType.Brace) {
+        while (this.currentToken.type !== TokenType.BraceC) {
             const key = this.currentToken.value;
             this.consume();
             this.consume(TokenType.Operator);
@@ -55,21 +55,21 @@ export class Parser {
             }
         }
         this.nodes.set('root', rootNode);
-        this.consume(TokenType.Brace);
+        this.consume(TokenType.BraceC);
     }
     parseNode() {
         const nodeName = this.currentToken.value;
         if (this.nodes.has(nodeName))
             throw new Error(`Duplicate node: ${nodeName}`);
         this.consume(TokenType.Identifier);
-        this.consume(TokenType.Brace);
+        this.consume(TokenType.BraceO);
         const node = {
             name: nodeName,
             label: '',
             children: []
         };
         // En parseNode()
-        while (this.currentToken.type !== TokenType.Brace) {
+        while (this.currentToken.type !== TokenType.BraceC) {
             const key = this.currentToken.value;
             this.consume();
             this.consume(TokenType.Operator);
@@ -95,7 +95,7 @@ export class Parser {
             }
         }
         this.nodes.set(nodeName, node);
-        this.consume(TokenType.Brace); // '}'
+        this.consume(TokenType.BraceC); // '}'
     }
     parseValue() {
         switch (this.currentToken.type) {
@@ -117,8 +117,8 @@ export class Parser {
     }
     parseChildren() {
         const children = [];
-        this.consume(TokenType.Bracket); // Consume '['
-        while (this.currentToken.type !== TokenType.Bracket) {
+        this.consume(TokenType.BracketO); // Consume '['
+        while (this.currentToken.type !== TokenType.BracketC) {
             if (this.currentToken.type !== TokenType.Identifier) {
                 throw new Error(`Expected identifier, got ${this.currentToken.type}`);
             }
@@ -128,13 +128,13 @@ export class Parser {
                 this.consume(TokenType.Comma); // Consume la coma si existe
             }
         }
-        this.consume(TokenType.Bracket); // Consume ']'
+        this.consume(TokenType.BracketC); // Consume ']'
         return children;
     }
     parseStyle() {
         const style = {};
-        this.consume(TokenType.Brace);
-        while (this.currentToken.type !== TokenType.Brace) {
+        this.consume(TokenType.BraceO);
+        while (this.currentToken.type !== TokenType.BraceC) {
             const key = this.currentToken.value;
             this.consume();
             this.consume(TokenType.Operator);
@@ -153,7 +153,7 @@ export class Parser {
                 this.consume();
             }
         }
-        this.consume(TokenType.Brace);
+        this.consume(TokenType.BraceC);
         return style;
     }
     validateReferences() {

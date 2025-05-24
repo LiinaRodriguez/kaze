@@ -1,4 +1,4 @@
-import { TokenType, State } from './lexer.js';
+import { TokenType, State } from './lexer';
 export class Tokenizer {
     constructor(input) {
         this.input = input;
@@ -55,12 +55,16 @@ export class Tokenizer {
                     else {
                         switch (char) {
                             case '(':
+                                tokens.push({ type: TokenType.ParenO, value: char, position: this.position });
+                                break;
                             case ')':
-                                tokens.push({ type: TokenType.Paren, value: char, position: this.position });
+                                tokens.push({ type: TokenType.ParenC, value: char, position: this.position });
                                 break;
                             case '{':
+                                tokens.push({ type: TokenType.BraceO, value: char, position: this.position });
+                                break;
                             case '}':
-                                tokens.push({ type: TokenType.Brace, value: char, position: this.position });
+                                tokens.push({ type: TokenType.BraceC, value: char, position: this.position });
                                 break;
                             case ',':
                                 tokens.push({ type: TokenType.Comma, value: char, position: this.position });
@@ -69,8 +73,10 @@ export class Tokenizer {
                                 tokens.push({ type: TokenType.Dot, value: char, position: this.position });
                                 break;
                             case '[':
+                                tokens.push({ type: TokenType.BracketO, value: char, position: this.position });
+                                break;
                             case ']':
-                                tokens.push({ type: TokenType.Bracket, value: char, position: this.position });
+                                tokens.push({ type: TokenType.BracketC, value: char, position: this.position });
                         }
                         if (!this.isWhitespace(char)) {
                             // Manejar errores aquí si es necesario

@@ -3,7 +3,7 @@ import { Parser } from '../parser/Parser.js';
 import { describe, expect, test } from '@jest/globals';
 describe('Diagram Parser', () => {
     test('debe parsear nodo root válido', () => {
-        const code = `root{
+        const code = `root {
         label: "Raiz",
         children: [node1]
       }
@@ -107,6 +107,51 @@ describe('Diagram Parser', () => {
       root{
         label: "Test"
       // Falta cerrar llave
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError(/Unexpected token/);
+    });
+    test('debe manejar sintaxis inválida: falta cerrar una llave', () => {
+        const code = `
+      root{
+        label: "Test"
+      // Falta cerrar llave
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError(/Unexpected token/);
+    });
+    test('debe manejar sintaxis inválida: falta cerrar un corchete', () => {
+        const code = `
+      root{
+        label: "Test"
+        children:[node1
+        }
+      node1{
+      label:"node1"
+      }
+      // Falta cerrar corchetes
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError(/Expected identifier, got BraceC/);
+    });
+    test('debe manejar sintaxis inválida: falta abrir llave', () => {
+        const code = `
+      root
+        label: "Test"}
+      // Falta abrir llave
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError(/Unexpected token/);
+    });
+    test('debe manejar sintaxis inválida: deben ser llaves balanceadas', () => {
+        const code = `
+      root}
+        label: "Test"
+      // Falta cerrar llave}
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());

@@ -40,7 +40,7 @@ export class Parser {
 
   private parseRoot(): void {
     this.consume(TokenType.Identifier);
-    this.consume(TokenType.Brace);
+    this.consume(TokenType.BraceO);
   
     const rootNode: Node = {
       name: 'root',
@@ -49,7 +49,7 @@ export class Parser {
     };
   
     // En parseRoot()
-    while (this.currentToken.type !== TokenType.Brace) {
+    while (this.currentToken.type !== TokenType.BraceC) {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
@@ -76,14 +76,14 @@ export class Parser {
     }
   
     this.nodes.set('root', rootNode);
-    this.consume(TokenType.Brace);
+    this.consume(TokenType.BraceC);
   }
 
   private parseNode(): void {
     const nodeName = this.currentToken.value;
     if (this.nodes.has(nodeName)) throw new Error(`Duplicate node: ${nodeName}`);
     this.consume(TokenType.Identifier);
-    this.consume(TokenType.Brace); 
+    this.consume(TokenType.BraceO); 
   
     const node: Node = {
       name: nodeName,
@@ -92,7 +92,7 @@ export class Parser {
     };
   
     // En parseNode()
-    while (this.currentToken.type !== TokenType.Brace) {
+    while (this.currentToken.type !== TokenType.BraceC) {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
@@ -119,7 +119,7 @@ export class Parser {
     }
   
     this.nodes.set(nodeName, node);
-    this.consume(TokenType.Brace); // '}'
+    this.consume(TokenType.BraceC); // '}'
   }
 
   private parseValue(): string | number | boolean{
@@ -144,9 +144,9 @@ export class Parser {
 
   private parseChildren(): string[] {
     const children: string[] = [];
-    this.consume(TokenType.Bracket); // Consume '['
+    this.consume(TokenType.BracketO); // Consume '['
     
-    while (this.currentToken.type !== TokenType.Bracket) {
+    while (this.currentToken.type !== TokenType.BracketC) {
       if (this.currentToken.type !== TokenType.Identifier) {
         throw new Error(`Expected identifier, got ${this.currentToken.type}`);
       }
@@ -158,15 +158,15 @@ export class Parser {
       }
     }
     
-    this.consume(TokenType.Bracket); // Consume ']'
+    this.consume(TokenType.BracketC); // Consume ']'
     return children;
   }
 
   private parseStyle(): { color?: string, bgcolor?: string }{
     const style: { color?: string, bgcolor?: string } = {}
-    this.consume(TokenType.Brace);
+    this.consume(TokenType.BraceO);
     
-    while (this.currentToken.type !== TokenType.Brace) {
+    while (this.currentToken.type !== TokenType.BraceC) {
       const key = this.currentToken.value
       this.consume()
       this.consume(TokenType.Operator)
@@ -188,7 +188,7 @@ export class Parser {
         this.consume();
       }
     }
-    this.consume(TokenType.Brace)
+    this.consume(TokenType.BraceC)
     return style;
   }
 
