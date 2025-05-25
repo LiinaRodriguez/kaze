@@ -1,5 +1,5 @@
 import { TokenType, Token } from "../lexer/lexer.js";
-
+import {StackAutomaton } from './stackAutomaton'
 export interface Node {
   name: string;
   label: string;
@@ -14,14 +14,20 @@ export class Parser {
   private nodes: Map<string, Node>;
   private currentToken: Token;  
   private tokens: Token[];
+  private automaton: StackAutomaton; 
 
   constructor(tokens: Token[]) {
     this.tokens = tokens
     this.currentToken = this.tokens[0];
     this.nodes = new Map();
+    this.automaton = new StackAutomaton();
   }
 
   private consume(expectedType?: TokenType): void {
+    if (expectedType && this.isDelimiter(expectedType)) {
+      this.handleDelimiter(expectedType);
+    }
+
     if (expectedType && this.currentToken.type !== expectedType) {
       throw new Error(`Unexpected token: ${this.currentToken.value}`);
     }
@@ -29,16 +35,49 @@ export class Parser {
     this.currentToken = this.tokens[0] || { type: TokenType.EOF, value: '', position: -1 };
   }
 
-  public parse(): Map<string, Node> {
-    this.parseRoot();
-    while (this.currentToken.type !== TokenType.EOF) {
-      this.parseNode();
+  private isDelimiter(type: TokenType): boolean {
+    return [
+      TokenType.BraceO, TokenType.BraceC,
+      TokenType.BracketO, TokenType.BracketC,
+      TokenType.ParenO, TokenType.ParenC
+    ].includes(type);
+  }
+  
+  private handleDelimiter(type: TokenType): void {
+    const delimiterMap = {
+      [TokenType.BraceO]: '{',
+      [TokenType.BraceC]: '}',
+      [TokenType.BracketO]: '[',
+      [TokenType.BracketC]: ']',
+      [TokenType.ParenO]: '(',
+      [TokenType.ParenC]: ')',
+    };
+  
+    const symbol = delimiterMap[type as keyof typeof delimiterMap];
+    
+    if (symbol === '{' || symbol === '[' || symbol === '(') {
+      this.automaton.pushDelimiter(symbol);
+    } else {
+      this.automaton.popDelimiter(symbol);
     }
-    this.validateReferences();
-    return this.nodes;
+  }
+
+  public parse(): Map<string, Node> {
+    try { 
+      this.parseRoot();
+      while (this.currentToken.type !== TokenType.EOF) {
+        this.parseNode();
+      }
+      this.validateReferences();
+      this.automaton.validateEmptyStack();
+      return this.nodes;
+    } catch (error) {
+      throw error;
+    }
   }
 
   private parseRoot(): void {
+    this.automaton.pushDelimiter('{');
     this.consume(TokenType.Identifier);
     this.consume(TokenType.BraceO);
   
@@ -47,7 +86,7 @@ export class Parser {
       label: '',
       children: []
     };
-  
+    
     // En parseRoot()
     while (this.currentToken.type !== TokenType.BraceC) {
       const key = this.currentToken.value;
@@ -76,12 +115,17 @@ export class Parser {
     }
   
     this.nodes.set('root', rootNode);
+    if (!rootNode.label) {
+      throw new Error('Root node must have a label');
+    }
     this.consume(TokenType.BraceC);
+    this.automaton.popDelimiter('}');
   }
 
   private parseNode(): void {
     const nodeName = this.currentToken.value;
     if (this.nodes.has(nodeName)) throw new Error(`Duplicate node: ${nodeName}`);
+    this.automaton.pushDelimiter('{');
     this.consume(TokenType.Identifier);
     this.consume(TokenType.BraceO); 
   
@@ -117,9 +161,13 @@ export class Parser {
         this.consume();
       }
     }
-  
+    
     this.nodes.set(nodeName, node);
+    if (!node.label) {
+      throw new Error(`Node '${nodeName}' must have a label`);
+    }
     this.consume(TokenType.BraceC); // '}'
+    this.automaton.popDelimiter('}');
   }
 
   private parseValue(): string | number | boolean{
@@ -144,6 +192,7 @@ export class Parser {
 
   private parseChildren(): string[] {
     const children: string[] = [];
+    this.automaton.pushDelimiter('[');
     this.consume(TokenType.BracketO); // Consume '['
     
     while (this.currentToken.type !== TokenType.BracketC) {
@@ -159,11 +208,13 @@ export class Parser {
     }
     
     this.consume(TokenType.BracketC); // Consume ']'
+    this.automaton.popDelimiter(']');
     return children;
   }
 
   private parseStyle(): { color?: string, bgcolor?: string }{
     const style: { color?: string, bgcolor?: string } = {}
+    this.automaton.pushDelimiter('{');
     this.consume(TokenType.BraceO);
     
     while (this.currentToken.type !== TokenType.BraceC) {
@@ -172,6 +223,10 @@ export class Parser {
       this.consume(TokenType.Operator)
 
       const value = this.parseValue();
+      
+      if (typeof value !== 'string') {
+        throw new Error(`Style attribute '${key}' must be a string`);
+      }
 
       switch (key) {
         case 'color':
@@ -189,6 +244,7 @@ export class Parser {
       }
     }
     this.consume(TokenType.BraceC)
+    this.automaton.popDelimiter('}');
     return style;
   }
 

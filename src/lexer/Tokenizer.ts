@@ -34,6 +34,9 @@ export class Tokenizer {
   private nextChar(): string {
     return this.input[this.position + 1] || '';
   }
+  private isHex(char:string): boolean {
+    return /^#[0-9a-fA-F]+/.test(char)
+  }
 
   public tokenize(): Token[] {
     const tokens: Token[] = [];
