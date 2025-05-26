@@ -1,42 +1,42 @@
 import { Tokenizer } from '../lexer/Tokenizer.js';
 import { Parser } from '../parser/Parser.js';
 import { describe, expect, test } from '@jest/globals';
+import { parseToReactFlow } from '../index';
 describe('Diagram Parser', () => {
-    test('debe parsear nodo root válido', () => {
-        const code = `root {
-        label: "Raiz",
+    test('parses valid root node', () => {
+        const code = `root{
+        label: "Root",
         children: [node1]
       }
-      node1{ label: "Nodo 1" };
+      node1 { label: "Node 1" }
     `;
         const tokenizer = new Tokenizer(code);
-        const tokens = tokenizer.tokenize();
-        const parser = new Parser(tokens);
+        const parser = new Parser(tokenizer.tokenize());
         const result = parser.parse();
         expect(result.has('root')).toBe(true);
         expect(result.get('root')).toEqual({
             name: 'root',
-            label: 'Raiz',
+            label: 'Root',
             children: ['node1']
         });
     });
-    test('debe parsear estructura jerárquica completa', () => {
+    test('parses complete hierarchical structure', () => {
         const code = `
-      root{
+      root {
         label: "Main",
-        children: [child1,child2]
+        children: [child1, child2]
       }
       
-      child1{
+      child1 {
         label: "First Child",
         children: [subchild]
       }
       
-      child2{
+      child2 {
         label: "Second Child"
       }
       
-      subchild{
+      subchild {
         label: "Nested"
       }
     `;
@@ -48,21 +48,21 @@ describe('Diagram Parser', () => {
         expect(nodes.get('child1')?.children).toEqual(['subchild']);
         expect(nodes.get('subchild')?.label).toBe('Nested');
     });
-    test('debe lanzar error por definición duplicada', () => {
-        const code = `root{
-        label: "Raiz",
+    test('throws error on duplicate node definition', () => {
+        const code = `root {
+        label: "Root",
         children: [node1]
       }
-      node1{ label: "Test" }
-      node1{ label: "Duplicate" }
+      node1 { label: "Test" }
+      node1 { label: "Duplicate" }
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());
         expect(() => parser.parse()).toThrowError('Duplicate node: node1');
     });
-    test('debe detectar referencias indefinidas', () => {
+    test('detects undefined node references', () => {
         const code = `
-      root{
+      root {
         label: "Test",
         children: [missingNode]
       }
@@ -71,29 +71,19 @@ describe('Diagram Parser', () => {
         const parser = new Parser(tokenizer.tokenize());
         expect(() => parser.parse()).toThrowError('Undefined node reference: missingNode in node root');
     });
-    test('siempre debe tener un atributo label', () => {
+    test('throws error if root node misses label', () => {
         const code = `
-      root{
-         style:{
-          color: ffff,
-         },
+      root {
+        style: { color: ffffff }
       }
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());
-        const nodes = parser.parse();
-        expect(nodes.get('root')).toEqual({
-            name: 'root',
-            label: '',
-            children: [],
-            style: {
-                color: 'ffff'
-            }
-        });
+        expect(() => parser.parse()).toThrowError('Root node must have a label');
     });
-    test('debe rechazar atributos inválidos', () => {
+    test('rejects invalid attributes', () => {
         const code = `
-      root{ 
+      root { 
         label: "Test",
         invalidAttr: "value"
       }
@@ -102,80 +92,129 @@ describe('Diagram Parser', () => {
         const parser = new Parser(tokenizer.tokenize());
         expect(() => parser.parse()).toThrowError('Invalid attribute: invalidAttr');
     });
-    test('debe manejar sintaxis inválida', () => {
+    test('handles unbalanced braces', () => {
         const code = `
-      root{
-        label: "Test"
-      // Falta cerrar llave
-    `;
-        const tokenizer = new Tokenizer(code);
-        const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError(/Unexpected token/);
-    });
-    test('debe manejar sintaxis inválida: falta cerrar una llave', () => {
-        const code = `
-      root{
-        label: "Test"
-      // Falta cerrar llave
-    `;
-        const tokenizer = new Tokenizer(code);
-        const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError(/Unexpected token/);
-    });
-    test('debe manejar sintaxis inválida: falta cerrar un corchete', () => {
-        const code = `
-      root{
-        label: "Test"
-        children:[node1
-        }
-      node1{
-      label:"node1"
-      }
-      // Falta cerrar corchetes
-    `;
-        const tokenizer = new Tokenizer(code);
-        const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError(/Expected identifier, got BraceC/);
-    });
-    test('debe manejar sintaxis inválida: falta abrir llave', () => {
-        const code = `
-      root
-        label: "Test"}
-      // Falta abrir llave
-    `;
-        const tokenizer = new Tokenizer(code);
-        const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError(/Unexpected token/);
-    });
-    test('debe manejar sintaxis inválida: deben ser llaves balanceadas', () => {
-        const code = `
-      root}
-        label: "Test"
-      // Falta cerrar llave}
-    `;
-        const tokenizer = new Tokenizer(code);
-        const parser = new Parser(tokenizer.tokenize());
-        expect(() => parser.parse()).toThrowError(/Unexpected token/);
-    });
-    test('debe manejar atributos opcionales correctamente', () => {
-        const code = `
-      root{
+      root {
         label: "Test",
-        style:{
-          bgcolor: abcdef
-        },
+      // Missing closing brace
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError(/Unexpected token/);
+    });
+    test('handles nested delimiters correctly', () => {
+        const code = `
+      root {
+        label: "Test",
+        children: [child1, child2],
+        style: { 
+          color: ffffff, 
+          bgcolor: eeeeee
+        }
+      }
+      child1 { label: "Child1" }
+      child2 { label: "Child2" }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).not.toThrow();
+    });
+    test('accepts empty children array', () => {
+        const code = `
+      root { 
+        label: "Test",
+        children: [] 
       }
     `;
         const tokenizer = new Tokenizer(code);
         const parser = new Parser(tokenizer.tokenize());
         const nodes = parser.parse();
-        expect(nodes.get('root')).toEqual({
-            name: 'root',
-            label: 'Test',
-            children: [],
-            style: {
-                bgcolor: 'abcdef'
-            }
+        expect(nodes.get('root')?.children).toEqual([]);
+    });
+    test('throws error on unbalanced brackets', () => {
+        const code = `
+      root { 
+        label: "Test",
+        children: [node1,
+      
+      }
+      node1 { label: "Node1" }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError('Expected identifier, got BraceC');
+    });
+    test('throws error if non-root node misses label', () => {
+        const code = `
+      root { label: "Root" }
+      nodeWithoutLabel { }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError("Node 'nodeWithoutLabel' must have a label");
+    });
+    test('throws error if use incorrect { }', () => {
+        const code = `
+      root }
+      
+      label: "Root" }
+
+      nodeWithoutLabel {label:'love' }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError("Unexpected token: }");
+    });
+});
+test('throws error when missing comma between attributes', () => {
+    const code = `
+    root {
+      label: "Missing Comma"
+      children: []
+    }
+  `;
+    const tokenizer = new Tokenizer(code);
+    const parser = new Parser(tokenizer.tokenize());
+    expect(() => parser.parse()).toThrowError('Expected comma between attributes');
+});
+test('parseToReactFlow throws error on invalid syntax', () => {
+    const code = `root } label:"goot"{`;
+    expect(() => parseToReactFlow(code)).toThrowError('Unexpected token: }');
+});
+describe('Parser - Custom Node Styles', () => {
+    test('parses node with custom color and bgcolor', () => {
+        const code = `
+      root {
+        label: "Root",
+        children: [node1],
+        style: { color: "#ff0000", bgcolor: "#00ff00" }
+      }
+      node1 {
+        label: "Node 1",
+        style: { color: "#0000ff", bgcolor: "#ffff00" }
+      }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        const nodes = parser.parse();
+        expect(nodes.get('root')?.style).toEqual({
+            color: "#ff0000",
+            bgcolor: "#00ff00"
         });
+        expect(nodes.get('node1')?.style).toEqual({
+            color: "#0000ff",
+            bgcolor: "#ffff00"
+        });
+    });
+    test('throws error for invalid hex color format', () => {
+        const code = `
+      root {
+        label: "Root",
+        style: { color: "invalidColor", bgcolor: "#00ff00" }
+      }
+    `;
+        const tokenizer = new Tokenizer(code);
+        const parser = new Parser(tokenizer.tokenize());
+        expect(() => parser.parse()).toThrowError("Invalid hex color format for 'color': invalidColor");
     });
 });

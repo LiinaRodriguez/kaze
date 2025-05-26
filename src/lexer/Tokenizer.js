@@ -15,13 +15,16 @@ export class Tokenizer {
         return /^[0-9]$/.test(char);
     }
     isOperator(char) {
-        return /^[+\-*/%=<>!&|^~:]$/.test(char);
+        return /^[:]$/.test(char);
     }
     isWhitespace(char) {
         return /^\s$/.test(char);
     }
     nextChar() {
         return this.input[this.position + 1] || '';
+    }
+    isHex(char) {
+        return /^#[0-9a-fA-F]+/.test(char);
     }
     tokenize() {
         const tokens = [];
@@ -77,6 +80,7 @@ export class Tokenizer {
                                 break;
                             case ']':
                                 tokens.push({ type: TokenType.BracketC, value: char, position: this.position });
+                                break;
                         }
                         if (!this.isWhitespace(char)) {
                             // Manejar errores aquí si es necesario

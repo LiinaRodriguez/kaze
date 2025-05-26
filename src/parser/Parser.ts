@@ -17,7 +17,7 @@ export class Parser {
   private automaton: StackAutomaton; 
 
   constructor(tokens: Token[]) {
-    this.tokens = tokens
+    this.tokens =  [...tokens];
     this.currentToken = this.tokens[0];
     this.nodes = new Map();
     this.automaton = new StackAutomaton();
@@ -29,7 +29,7 @@ export class Parser {
     }
 
     if (expectedType && this.currentToken.type !== expectedType) {
-      throw new Error(`Unexpected token: ${this.currentToken.value}`);
+      throw new Error(`Unexpected token: ${this.currentToken.value} (expected ${expectedType})`);
     }
     this.tokens.shift();
     this.currentToken = this.tokens[0] || { type: TokenType.EOF, value: '', position: -1 };
@@ -62,40 +62,26 @@ export class Parser {
     }
   }
 
-  public parse(): Map<string, Node> {
-    try { 
-      this.parseRoot();
-      while (this.currentToken.type !== TokenType.EOF) {
-        this.parseNode();
-      }
-      this.validateReferences();
-      this.automaton.validateEmptyStack();
-      return this.nodes;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   private parseRoot(): void {
-    this.automaton.pushDelimiter('{');
+    
     this.consume(TokenType.Identifier);
     this.consume(TokenType.BraceO);
+    this.automaton.pushDelimiter('{');
   
     const rootNode: Node = {
       name: 'root',
       label: '',
       children: []
     };
-    
-    // En parseRoot()
-    while (this.currentToken.type !== TokenType.BraceC) {
+  
+    this.parseAttributes(() => {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
-
+  
       if (key === 'style') {
         rootNode.style = this.parseStyle();
-      } else if (key === 'children') { // Nuevo caso para 'children'
+      } else if (key === 'children') {
         rootNode.children = this.parseChildren();
       } else {
         const value = this.parseValue();
@@ -103,16 +89,11 @@ export class Parser {
           case 'label':
             rootNode.label = value as string;
             break;
-          // Eliminar el caso 'child'
           default:
             throw new Error(`Invalid attribute: ${key}`);
         }
       }
-
-      if (this.currentToken.type === TokenType.Comma as TokenType) {
-        this.consume();
-      }
-    }
+    });
   
     this.nodes.set('root', rootNode);
     if (!rootNode.label) {
@@ -121,13 +102,15 @@ export class Parser {
     this.consume(TokenType.BraceC);
     this.automaton.popDelimiter('}');
   }
+  
 
   private parseNode(): void {
     const nodeName = this.currentToken.value;
     if (this.nodes.has(nodeName)) throw new Error(`Duplicate node: ${nodeName}`);
-    this.automaton.pushDelimiter('{');
+   
     this.consume(TokenType.Identifier);
     this.consume(TokenType.BraceO); 
+    this.automaton.pushDelimiter('{');
   
     const node: Node = {
       name: nodeName,
@@ -135,15 +118,14 @@ export class Parser {
       children: []
     };
   
-    // En parseNode()
-    while (this.currentToken.type !== TokenType.BraceC) {
+    this.parseAttributes(() => {
       const key = this.currentToken.value;
       this.consume();
       this.consume(TokenType.Operator);
-
+  
       if (key === 'style') {
         node.style = this.parseStyle();
-      } else if (key === 'children') { // Nuevo caso para 'children'
+      } else if (key === 'children') {
         node.children = this.parseChildren();
       } else {
         const value = this.parseValue();
@@ -151,17 +133,12 @@ export class Parser {
           case 'label':
             node.label = value as string;
             break;
-          // Eliminar el caso 'child'
           default:
             throw new Error(`Invalid attribute: ${key}`);
         }
       }
-
-      if (this.currentToken.type === TokenType.Comma) {
-        this.consume();
-      }
-    }
-    
+    });
+  
     this.nodes.set(nodeName, node);
     if (!node.label) {
       throw new Error(`Node '${nodeName}' must have a label`);
@@ -169,8 +146,9 @@ export class Parser {
     this.consume(TokenType.BraceC); // '}'
     this.automaton.popDelimiter('}');
   }
+  
 
-  private parseValue(): string | number | boolean{
+  private parseValue(): string | number | boolean {
     switch (this.currentToken.type) {
       case TokenType.String:
         const str = this.currentToken.value;
@@ -183,6 +161,16 @@ export class Parser {
         return num;
       case TokenType.Identifier:
         const ref = this.currentToken.value;
+        // Si es un color hexadecimal (comienza con #), lo procesamos como está
+        if (ref.startsWith('#')) {
+          this.consume();
+          return ref;
+        }
+        // Si es un color hexadecimal sin #, le añadimos el #
+        if (/^[0-9a-fA-F]{6}$/.test(ref)) {
+          this.consume();
+          return `#${ref}`;
+        }
         this.consume();
         return ref;
       default:
@@ -193,59 +181,94 @@ export class Parser {
   private parseChildren(): string[] {
     const children: string[] = [];
     this.automaton.pushDelimiter('[');
-    this.consume(TokenType.BracketO); // Consume '['
-    
+    this.consume(TokenType.BracketO);
+  
+    let expectElement = true;
+  
     while (this.currentToken.type !== TokenType.BracketC) {
-      if (this.currentToken.type !== TokenType.Identifier) {
-        throw new Error(`Expected identifier, got ${this.currentToken.type}`);
-      }
-      children.push(this.currentToken.value);
-      this.consume(TokenType.Identifier); // Consume el identificador
-      
-      if (this.currentToken.type === TokenType.Comma as TokenType) {
-        this.consume(TokenType.Comma); // Consume la coma si existe
+      if (expectElement) {
+        if (this.currentToken.type !== TokenType.Identifier) {
+          throw new Error(`Expected identifier, got ${this.currentToken.type}`);
+        }
+        children.push(this.currentToken.value);
+        this.consume(TokenType.Identifier);
+        expectElement = false;
+      } else {
+        if (this.currentToken.type === TokenType.Comma) {
+          this.consume(TokenType.Comma);
+          expectElement = true;
+        } else {
+          throw new Error(`Expected comma between children`);
+        }
       }
     }
-    
-    this.consume(TokenType.BracketC); // Consume ']'
+  
+    this.consume(TokenType.BracketC);
     this.automaton.popDelimiter(']');
     return children;
   }
 
-  private parseStyle(): { color?: string, bgcolor?: string }{
-    const style: { color?: string, bgcolor?: string } = {}
-    this.automaton.pushDelimiter('{');
-    this.consume(TokenType.BraceO);
+  private parseStyle(): { color?: string, bgcolor?: string } {
+    const style: { color?: string, bgcolor?: string } = {};
     
-    while (this.currentToken.type !== TokenType.BraceC) {
-      const key = this.currentToken.value
-      this.consume()
-      this.consume(TokenType.Operator)
-
+    this.consume(TokenType.BraceO);
+    this.automaton.pushDelimiter('{');
+  
+    this.parseAttributes(() => {
+      const key = this.currentToken.value;
+      this.consume();
+      this.consume(TokenType.Operator);
+  
       const value = this.parseValue();
-      
-      if (typeof value !== 'string') {
-        throw new Error(`Style attribute '${key}' must be a string`);
-      }
-
+  
       switch (key) {
         case 'color':
-          style.color = value as string
+          if (!/^#?[0-9a-fA-F]{6}$/.test(value as string)) {
+            throw new Error(`Invalid hex color format for '${key}': ${value}`);
+          }
+          style.color = value as string;
           break;
+  
         case 'bgcolor':
-          style.bgcolor = value as string
-          break; 
+          if (!/^#?[0-9a-fA-F]{6}$/.test(value as string)) {
+            throw new Error(`Invalid hex color format for '${key}': ${value}`);
+          }
+          style.bgcolor = value as string;
+          break;
+  
         default:
-          throw new Error(`Invalid style attribute ${key}`)
-          
+          throw new Error(`Invalid style attribute ${key}`);
       }
-      if (this.currentToken.type === TokenType.Comma) {
-        this.consume();
-      }
-    }
-    this.consume(TokenType.BraceC)
+    });
+  
+    this.consume(TokenType.BraceC);
     this.automaton.popDelimiter('}');
     return style;
+  }
+
+  private parseAttributes(callback: () => void): void {
+    let firstAttributeParsed = false; 
+
+    while (this.currentToken.type !== TokenType.BraceC) { 
+      if (this.currentToken.type === TokenType.EOF) {
+        throw new Error(`Unexpected token: EOF`);
+      }
+
+      if (firstAttributeParsed) { 
+        if (this.currentToken.type === TokenType.Comma) { 
+          this.consume(TokenType.Comma); 
+        } else {
+          throw new Error(`Expected comma between attributes`);
+        }
+      }
+  
+      if (this.currentToken.type !== TokenType.Identifier) {
+        throw new Error(`Unexpected token: ${this.currentToken.value}`);
+      }
+  
+      callback(); 
+      firstAttributeParsed = true; 
+    }
   }
 
   private validateReferences(): void {
@@ -257,4 +280,27 @@ export class Parser {
       }
     }
   }
+
+  public parse(): Map<string, Node> {
+    try { 
+      // Validar que el primer token sea 'root' y el segundo sea '{'
+      if (this.tokens[0]?.type !== TokenType.Identifier || this.tokens[0]?.value !== 'root') {
+        throw new Error('Document must start with root node');
+      }
+      if (this.tokens[1]?.type === TokenType.BraceC) {
+        throw new Error('Unexpected token: } (expected {)');
+      }
+      
+      this.parseRoot();
+      while (this.currentToken.type !== TokenType.EOF) {
+        this.parseNode();
+      }
+      this.validateReferences();
+      this.automaton.validateEmptyStack();
+      return this.nodes;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
+

@@ -24,7 +24,7 @@ export class Tokenizer {
   }
 
   private isOperator(char: string): boolean {
-    return /^[+\-*/%=<>!&|^~:]$/.test(char);
+    return /^[:]$/.test(char);
   }
 
   private isWhitespace(char: string): boolean {
@@ -90,6 +90,7 @@ export class Tokenizer {
                 break;
               case ']':
                 tokens.push({ type: TokenType.BracketC, value: char, position: this.position });
+                break;
             }
             if (!this.isWhitespace(char)) {
               // Manejar errores aquí si es necesario
